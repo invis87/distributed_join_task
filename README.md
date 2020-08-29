@@ -11,7 +11,7 @@ Two tables:
 Result for query:
 ```sql
 SELECT `Donor State`, sum(`Donation Amount`) FROM donors, donations WHERE
-donations.`Donor ID` = donors.`Donor ID` GROUP BY `Donor State``
+donations.`Donor ID` = donors.`Donor ID` GROUP BY `Donor State`
 ```
 
 ## Command options
