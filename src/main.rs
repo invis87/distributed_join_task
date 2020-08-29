@@ -1,11 +1,8 @@
 mod map_reduce;
 
-use anyhow::anyhow;
 use getopts::Options;
 use std::env;
-use std::fs::File;
-use std::io::BufRead;
-use std::io::BufReader;
+use std::time::Instant;
 
 type Result<T> = std::result::Result<T, anyhow::Error>;
 
@@ -30,6 +27,7 @@ async fn main() {
         "path to csv file with donations",
         "/Users/someone/Donations.csv",
     );
+    opts.optopt("c", "task-size", "donors in map reduce task", "100000");
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -46,24 +44,22 @@ async fn main() {
 
     let donors_file_path = matches.opt_str("d").unwrap();
     let donations_file_path = matches.opt_str("n").unwrap();
+    let donors_in_task = matches
+        .opt_str("c")
+        .unwrap_or("100000".to_owned())
+        .parse::<usize>()
+        .unwrap();
 
-    match map_reduce::run(donors_file_path, donations_file_path).await {
-        Ok(_) => log::info!("map_reduce successfully returned: {}", 25),
+    let start_time = Instant::now();
+    match map_reduce::run(donors_file_path, donations_file_path, donors_in_task).await {
+        Ok(res) => log::info!(
+            "map_reduce successfully finished, time elapsed: {:.3?}, result: {:?}",
+            start_time.elapsed(),
+            res
+        ),
         Err(err) => log::error!("map_reduce failed, reason: {}", err),
     }
 }
-
-// Donations
-// Project ID,Donation ID,Donor ID,Donation Included Optional Donation,Donation Amount,Donor Cart Sequence
-//
-//
-// Donors
-// Donor ID,Don City,Donor State,Donor Is Teacher,Donor Zip
-//
-// `select `Donor State`, sum(`Donation Amount`) from donors, donations where donations.`Donor ID` = donors.`Donor ID` group by `Donor State``
-//
-//
-// state | amount
 
 fn print_usage(program: &str, opts: Options) {
     let brief = format!("Usage: {} [options]", program);
