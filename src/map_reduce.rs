@@ -152,9 +152,10 @@ fn get_indexes(
     }
 
     Err(anyhow!(
-        "fail to find '{}' or '{}' in donors header",
+        "fail to find '{}' or '{}' in '{}' header",
         first_col_name,
-        second_col_name
+        second_col_name,
+        header
     ))
 }
 
